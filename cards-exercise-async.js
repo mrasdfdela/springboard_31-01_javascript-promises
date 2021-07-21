@@ -1,50 +1,51 @@
-function logCard(draw) {
-  card = draw.data.cards[0];
-  console.log(`${card.value} of ${card.suit}`);
+function cardFromDraw(draw){
+  return draw.cards[0]
 }
 
-function drawCard(deckId = "new") {
-  return axios.get(
-    `http://deckofcardsapi.com/api/deck/${deckId}/draw/?count=1`
-  );
+// Part 1
+async function drawCard(deckId = "new"){
+  url = `http://deckofcardsapi.com/api/deck/${deckId}/draw/?count=1`;
+  newDraw = await axios.get(url);
+  draw = newDraw.data;
+  card = cardFromDraw(draw);
+  // console.log(`${card.value} of ${card.suit}`);
+  return newDraw.data;
 }
+// drawOne = drawCard();
 
-// Part 2
-let deckId = "new";
-// drawCard()
-//   .then( (req) => {
-//     deckId = req.data.deck_id;
-//     console.log(deckId)
-//     logCard(req);
-//     return drawCard(deckId);
-//   })
-//   .then( (req) => {
-//     deckId = req.data.deck_id;
-//     console.log(deckId)
-//     logCard(req);
-//     return drawCard(req.data.deck_id);
-//   });
+// // Part 2
+async function drawTwoCards(){
+  let cards = await Promise.all([
+    drawOne = drawCard(),
+    drawTwo = drawCard(drawOne.deck_id),
+  ])
 
-// Part 3
-btn = document.querySelector("#card-form button");
-table = document.querySelector("#card-table");
+  cards.forEach( (card) => {
+    card = cardFromDraw(card);
+    console.log(`${card.value} of ${card.suit}`);
+  })
+}
+// drawTwoCards();
 
-btn.addEventListener("click", (evt) => {
-  evt.preventDefault();
-  drawCard(deckId).then((req) => {
-    deckId = req.data.deck_id;
-    console.log(deckId);
-    logCard(req);
-    // console.log(req.data.cards[0].image)
-    printCard(req);
-  });
-});
-
+// // Part 3
 function printCard(draw) {
+  let card = cardFromDraw(draw);
   let newCard = document.createElement("li");
   let newLI = document.createElement("img");
-  newLI.src = draw.data.cards[0].image;
-  // console.log(newLI)
+
+  newLI.src = card.image;
   newCard.appendChild(newLI);
   table.appendChild(newCard);
 }
+
+let btn = document.querySelector("#card-form button");
+let table = document.querySelector("#card-table");
+let deckId = "new"
+
+btn.addEventListener("click", async (evt) => {
+  evt.preventDefault();
+  let newDraw = await drawCard(deckId);
+  deckId = newDraw.deck_id;
+  console.log(newDraw)
+  printCard(newDraw);
+});
